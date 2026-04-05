@@ -282,17 +282,17 @@ Confirmar
         localStorage.setItem(CARRITO_STORAGE_KEY, JSON.stringify(carrito));
     }
     
-    function extraerPrecio(nombre) {
-        const match = nombre.match(/\*([^*]+)\*/);
-        if (match) {
-            const precioStr = match[1].replace('$', '').replace(',', '');
-            return parseFloat(precioStr);
-        }
-        return 0;
+    // NUEVA FUNCIÓN: extraer precio del campo 'precio' del JSON
+    function extraerPrecio(producto) {
+        if (!producto || !producto.precio) return 0;
+        // Convierte "$4,250" a 4250
+        const precioStr = producto.precio.toString();
+        return parseFloat(precioStr.replace(/[^0-9.-]/g, ''));
     }
     
+    // El nombre ya viene limpio del JSON, no necesita limpieza
     function limpiarNombre(nombre) {
-        return nombre.replace(/\*[^*]+\*/g, '').trim();
+        return nombre;
     }
     
     async function cargarProductos() {
@@ -330,9 +330,9 @@ Confirmar
         carrito.items.forEach(item => {
             const producto = todosLosProductos.find(p => p.id === item.id);
             if (producto) {
-                const precio = extraerPrecio(producto.nombre);
-                const nombreLimpio = limpiarNombre(producto.nombre);
-                const itemTotal = precio * item.cantidad;
+                const precioNumerico = extraerPrecio(producto);
+                const nombreLimpio = producto.nombre;
+                const itemTotal = precioNumerico * item.cantidad;
                 subtotal += itemTotal;
                 
                 itemsHtml += `
@@ -343,7 +343,7 @@ Confirmar
                         <div class="flex-1 flex flex-col justify-between py-1">
                             <div>
                                 <h3 class="font-headline text-sm font-semibold tracking-wide uppercase">${nombreLimpio}</h3>
-                                <p class="text-xs text-primary mt-1">$${precio.toFixed(2)} c/u</p>
+                                <p class="text-xs text-primary mt-1">${producto.precio} c/u</p>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center bg-surface-container-highest rounded px-2 py-1">
@@ -430,9 +430,9 @@ Confirmar
         carrito.items.forEach(item => {
             const producto = todosLosProductos.find(p => p.id === item.id);
             if (producto) {
-                const precio = extraerPrecio(producto.nombre);
-                const nombreLimpio = limpiarNombre(producto.nombre);
-                const itemTotal = precio * item.cantidad;
+                const precioNumerico = extraerPrecio(producto);
+                const nombreLimpio = producto.nombre;
+                const itemTotal = precioNumerico * item.cantidad;
                 subtotal += itemTotal;
                 resumenHtml += `<p class="text-sm">• ${nombreLimpio} x${item.cantidad} = <span class="text-primary font-bold">$${itemTotal.toFixed(2)}</span></p>`;
             }
@@ -457,11 +457,11 @@ Confirmar
         carrito.items.forEach(item => {
             const producto = todosLosProductos.find(p => p.id === item.id);
             if (producto) {
-                const precio = extraerPrecio(producto.nombre);
-                const nombreLimpio = limpiarNombre(producto.nombre);
-                const itemTotal = precio * item.cantidad;
+                const precioNumerico = extraerPrecio(producto);
+                const nombreLimpio = producto.nombre;
+                const itemTotal = precioNumerico * item.cantidad;
                 subtotal += itemTotal;
-                mensaje += `• ${nombreLimpio} - ${item.cantidad} x $${precio.toFixed(2)} = *$${itemTotal.toFixed(2)}*%0A`;
+                mensaje += `• ${nombreLimpio} - ${item.cantidad} x ${producto.precio} = *$${itemTotal.toFixed(2)}*%0A`;
             }
         });
         

@@ -185,6 +185,19 @@
             background: rgba(242, 202, 80, 0.3);
             transform: translateX(-4px);
         }
+        .family-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+        }
+        .family-card:hover .family-image {
+            transform: scale(1.08);
+        }
+        .fallback-icon {
+            font-size: 5rem;
+            color: rgba(242, 202, 80, 0.6);
+        }
     </style>
 </head>
 <body class="font-body selection:bg-primary selection:text-on-primary">
@@ -264,7 +277,6 @@
     let todosLosProductos = [];
     let familiasUnicas = [];
     let familiaActiva = null;      // null = mostrando familias, string = familia seleccionada
-    let productosFiltradosGlobal = []; // para búsqueda dentro de la vista actual
 
     // Elementos DOM
     const productsGrid = document.getElementById('productsGrid');
@@ -345,7 +357,7 @@
         actualizarContadorCarrito();
     }
 
-    // --- Renderizado de tarjetas de FAMILIA ---
+    // --- Renderizado de tarjetas de FAMILIA con imágenes personalizadas ---
     function renderFamilias(familiasFiltradas = null) {
         const familiasAMostrar = familiasFiltradas || familiasUnicas;
         if (!familiasAMostrar.length) {
@@ -353,25 +365,17 @@
             return;
         }
         
-        // Para cada familia, crear una tarjeta visualmente impactante
         const familiasHTML = familiasAMostrar.map(familia => {
-            // Contar cuántos productos tiene esa familia (para mostrarlo como detalle)
             const cantidadProductos = todosLosProductos.filter(p => p.familia === familia).length;
-            // Icono representativo según familia
-            let icono = "inventory_2";
-            if (familia === "Relojes") icono = "watch";
-            else if (familia === "Fragancias") icono = "spa";
-            else if (familia === "Audífonos") icono = "headphones";
-            else if (familia === "Bolsos") icono = "shopping_bag";
-            else if (familia === "Gafas") icono = "glasses";
+            const imagenPath = `img/${familia}.png`;
             
             return `
                 <article class="family-card group bg-surface-container-low rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20" data-familia="${familia}">
-                    <div class="relative aspect-[4/3] bg-gradient-to-br from-primary/20 to-surface-container-high flex items-center justify-center">
-                        <span class="material-symbols-outlined text-7xl md:text-8xl text-primary/70 group-hover:scale-110 transition-transform duration-500" style="font-variation-settings: 'FILL' 1;">${icono}</span>
-                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span class="bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide">Ver colección</span>
-                        </div>
+                    <div class="relative aspect-[4/3] bg-gradient-to-br from-surface-container-high to-surface-container overflow-hidden">
+                        <img src="${imagenPath}" 
+                             alt="${familia}" 
+                             class="family-image w-full h-full object-cover"
+                             onerror="this.onerror=null; this.parentElement.innerHTML=this.parentElement.innerHTML + '<div class=\\'absolute inset-0 flex items-center justify-center bg-surface-container-high\\'><span class=\\'material-symbols-outlined fallback-icon\\' style=\\'font-size:5rem; color:#f2ca50;\\'>category</span></div>'; this.style.display='none';">
                     </div>
                     <div class="p-6 text-center">
                         <h3 class="font-headline text-2xl font-bold tracking-tight text-primary">${familia}</h3>
@@ -386,7 +390,6 @@
         // Añadir event listeners a cada tarjeta de familia
         document.querySelectorAll('.family-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                // Evitar que el click se propague si se hace clic en el botón interno (aunque no hay botón, es toda la tarjeta)
                 const familia = card.getAttribute('data-familia');
                 if (familia) {
                     seleccionarFamilia(familia);
@@ -399,7 +402,6 @@
     function renderProductosDeFamilia(familia, busquedaTexto = '') {
         let productos = todosLosProductos.filter(p => p.familia === familia);
         
-        // Aplicar búsqueda dentro de la familia seleccionada (por nombre o familia)
         if (busquedaTexto.trim() !== '') {
             const lowerBusq = busquedaTexto.toLowerCase();
             productos = productos.filter(p => 
@@ -413,7 +415,6 @@
             return;
         }
         
-        // Inicializar cantidades para estos productos si no existen
         productos.forEach(p => {
             if (!window.cantidadesProductos) window.cantidadesProductos = {};
             if (!window.cantidadesProductos[p.id]) window.cantidadesProductos[p.id] = 1;
@@ -446,14 +447,11 @@
         const busqueda = searchInput.value.trim();
         
         if (familiaActiva === null) {
-            // Modo: mostrar FAMILIAS
             mainTitle.textContent = "FAMILIAS";
             subtitle.textContent = "Explora nuestras colecciones";
             backButtonContainer.classList.add('hidden');
             
             let familiasParaMostrar = [...familiasUnicas];
-            // Si hay búsqueda, filtrar familias cuyo nombre coincida o que tengan productos que coincidan? 
-            // Para mejor UX: filtrar familias por nombre de familia
             if (busqueda !== '') {
                 const lowerBusq = busqueda.toLowerCase();
                 familiasParaMostrar = familiasUnicas.filter(fam => 
@@ -463,7 +461,6 @@
             }
             renderFamilias(familiasParaMostrar);
         } else {
-            // Modo: mostrar productos de una familia específica
             mainTitle.textContent = familiaActiva;
             subtitle.textContent = `Colección completa · ${todosLosProductos.filter(p => p.familia === familiaActiva).length} productos`;
             backButtonContainer.classList.remove('hidden');
@@ -471,22 +468,17 @@
         }
     }
 
-    // --- Seleccionar una familia (click en tarjeta) ---
     function seleccionarFamilia(familia) {
         familiaActiva = familia;
-        // Limpiar búsqueda al entrar a una familia? opcional, pero mantiene la búsqueda para filtrar dentro
-        // Mejor mantener el input pero resetearlo? Lo dejamos para que el usuario pueda buscar dentro
         actualizarVistaSegunEstado();
     }
 
-    // --- Volver a la vista de familias ---
     function volverAFamilias() {
         familiaActiva = null;
-        searchInput.value = '';   // limpiar búsqueda al regresar
+        searchInput.value = '';
         actualizarVistaSegunEstado();
     }
 
-    // --- Evento de búsqueda (filtra según el modo actual) ---
     function manejarBusqueda() {
         actualizarVistaSegunEstado();
     }
@@ -494,35 +486,28 @@
     // --- Cargar productos desde JSON ---
     async function cargarProductos() {
         try {
-            // Usar los datos del JSON proporcionado (simulamos fetch o usamos directamente)
-            // Como el JSON está en el contexto, lo integramos directamente para evitar problemas de ruta
-            const data = {
-                "productos": [
-                    { "id": 1, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuAd7kmhtDzABfqwjvTnzmyy-X4xCNw3ec6hf1ldiVrG16t9015T_zSooiskEr9jWjwKWqrn7qYW2qaUvfU7S4dqNLNiUd9CzoK7Rb3gjFGWInl85Slt4LESaVwi9cIFvKPy9AwvN2jRb1XopPkm510NzVgh4yllIcKT0zN3PC1KQOqf8LdhYDngeyF_s2r6cLTBkxWfrlsCSOOlP7wQZPCvwIa0w-VZ0-rF48jUhtDgPPzxku09LGxb30zbvQOpCjTuf140eacuUB7H", "nombre": "OBSIDIAN CHRONO X", "precio": "$4,250", "familia": "Relojes" },
-                    { "id": 2, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuBAH6P0r-3CIVUXOYOQNQ4xI81fGO0QwzvSRvAN8SmtOOWAwcVHIfk6mV8oHsQODf5wB4bPtVBy4p1QOV7QN85MLqAA-M3q8HxQnRTHo3svQ6F5jGx0sQeGzpibVHD9AY-RbB8XaHv58q9qOhnkE4AYO--BqH9cVzEZkOAfSgVIouTzmfz2-YyM3f7DnOEDg6V_6ftj_x00CVlQQT1sJj7uy-tvO6NKyG8PFLJN3qaq1CVfOQZzIskAReHJ_6uD5K5lZStK81P44RLe", "nombre": "NOIR ESSENCE", "precio": "$195", "familia": "Fragancias" },
-                    { "id": 3, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCOjkiILZwdjdOsYSN3Mwn4fhYyE_Z8-1O54fdkpY8v5oWk8NAGvKKpqU0rz8aOV1ms44R3CcMPmjzSq3vDeW6AtGnd8zB7xCcPN7JWdqLfQDuM2D_QgYKg_h_hxQOCiopPnjfbaiEKO2f7QGFJxwsiuKjVz4CqMZHX1hRPBzeYVgzcCyR4YylyrQwrgdpMshOPVTXzA9lfXAFXzxYew7kgsc7x6O1MLCquX9fS3ZGDfLhqxeg-1KJYf9L4o4dGVFL6nXFyHIx9N289", "nombre": "VELVET SOUND G1", "precio": "$890", "familia": "Audífonos" },
-                    { "id": 4, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuDeX-tvqgS2xyXSWvAZ2w7c5dIDoVF4k6VICMXQnq5oBIX793-WobeS6Zhkj9Dx1EIbY6lr5eXDehk0UXg55JCwWVyeQsvOV5xJ7z00GHp-8LFQMYC1UrYTAjeD2pnYcQCAbUKnuvCMSZkEtlgXt2_GeYLholcSPpjOHaJ89wyaSr_Ig0JHIu6Q79S5uZtEG_yEYa999wmhg87S3mw2ESkhBwAKvmlxAYI4h79WonmHxGpD9_aM0p0p-HPIUtF2Bv0AnD72hgixu8vD", "nombre": "VOYAGER TOTE", "precio": "$1,500", "familia": "Bolsos" },
-                    { "id": 5, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCcqlUB_vlMQOkUbkUzzlgjY7U-nDIfNiXpKrQzDzfcxEqMchyUBMcJpGOaSoEMFHEuf1e-HdPbJX4I2VUpe_HFA67fcNJhEw8q06WMQ259Kk2aF_nq9hvWikhwAzL1VgyICLYfraD8c_2TOBICtMbEo9-SvSoX3bXWVyqwMt9dLeGd9GB-0MkJE3Np5_H46T237UHuILyE3sePiW9fT2P94zas7L9QNNsTBNwnzkPJN1s0PkhyK1k74FYhl1sQ696WNa0QH0ry2uAq", "nombre": "ECLIPSE SHADES", "precio": "$420", "familia": "Gafas" },
-                    { "id": 6, "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCYqvZVs4BVV9XlMpbsSE12OXIagDj-_pKOkAYs6NhKtOfJa1vwQfFD_9V3kMJsiAJ679sVScDuqdgm1gAzq-vCZBdjGgoJ8bLiTHXO-Lo8p8jkHNUm3dDS9-08xqivREynl0e2pHfCSp6Sj0ibdqhZe2wPANmfR2hc_xMWC0vzOD4fFGtCQxWmeXuhuV82TqM5rUeDkiYe8PJ_OIeDkeRJR9_unJ3Oo3bZ_rZ_k9XnGEzhoup--aLEAzIdwXIy-zSvE_YMgDAZUeUL", "nombre": "ELIXIR NOIR", "precio": "$130", "familia": "Fragancias" }
-                ]
-            };
+            const response = await fetch('json/productos.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            
+            if (!data.productos || !Array.isArray(data.productos)) {
+                throw new Error('Formato JSON inválido: se esperaba un array "productos"');
+            }
             
             todosLosProductos = data.productos;
-            // Extraer familias únicas
-            const familiasSet = new Set(todosLosProductos.map(p => p.familia));
+            const familiasSet = new Set(todosLosProductos.map(p => p.familia).filter(f => f && f.trim()));
             familiasUnicas = Array.from(familiasSet).sort();
             
             window.todosLosProductos = todosLosProductos;
             window.cantidadesProductos = {};
             todosLosProductos.forEach(p => { window.cantidadesProductos[p.id] = 1; });
             
-            // Inicializar vista de familias
             familiaActiva = null;
             actualizarVistaSegunEstado();
             actualizarContadorCarrito();
         } catch (error) {
-            console.error('Error:', error);
-            productsGrid.innerHTML = '<p class="text-center col-span-3">Error al cargar productos</p>';
+            console.error('Error cargando productos:', error);
+            productsGrid.innerHTML = `<p class="text-center col-span-3 text-error">❌ Error al cargar productos: ${error.message}<br><small>Verifica que el archivo json/productos.json existe y tiene el formato correcto.</small></p>`;
         }
     }
 
@@ -530,7 +515,6 @@
     searchInput.addEventListener('input', manejarBusqueda);
     backToFamiliesBtn.addEventListener('click', volverAFamilias);
     
-    // Iniciar
     cargarProductos();
 </script>
 </body>

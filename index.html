@@ -198,6 +198,26 @@
             font-size: 5rem;
             color: rgba(242, 202, 80, 0.6);
         }
+        .refresh-btn {
+            background: rgba(242, 202, 80, 0.1);
+            border: 1px solid rgba(242, 202, 80, 0.3);
+            transition: all 0.2s ease;
+        }
+        .refresh-btn:hover {
+            background: rgba(242, 202, 80, 0.2);
+            border-color: rgba(242, 202, 80, 0.6);
+            transform: rotate(180deg);
+        }
+        .refresh-btn:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="font-body selection:bg-primary selection:text-on-primary">
@@ -211,10 +231,16 @@
         <a class="font-['Manrope'] uppercase tracking-widest text-sm text-[#E5E2E1]/60 hover:text-[#F2CA50] transition-colors duration-300" href="html/carrito.html">Carrito</a>
         <a class="font-['Manrope'] uppercase tracking-widest text-sm text-[#E5E2E1]/60 hover:text-[#F2CA50] transition-colors duration-300" href="html/nosotros.html">Sobre Nosotros</a>
     </div>
-    <a href="html/carrito.html" class="relative">
-        <span class="material-symbols-outlined text-[#D4AF37] scale-95 active:duration-150 cursor-pointer">shopping_bag</span>
-        <span id="cartBadge" class="cart-badge hidden">0</span>
-    </a>
+    <div class="flex items-center gap-4">
+        <!-- Botón Actualizar / Refresh Cache -->
+        <button id="refreshCacheBtn" class="refresh-btn p-2 rounded-full transition-all duration-300" title="Actualizar catálogo (limpiar caché)">
+            <span class="material-symbols-outlined text-[#F2CA50]">refresh</span>
+        </button>
+        <a href="html/carrito.html" class="relative">
+            <span class="material-symbols-outlined text-[#D4AF37] scale-95 active:duration-150 cursor-pointer">shopping_bag</span>
+            <span id="cartBadge" class="cart-badge hidden">0</span>
+        </a>
+    </div>
 </header>
 
 <main class="pt-32 pb-40 px-6 max-w-7xl mx-auto">
@@ -238,6 +264,14 @@
                 <span class="material-symbols-outlined text-sm">arrow_back</span>
                 <span>Volver a todas las familias</span>
             </button>
+        </div>
+        
+        <!-- Mensaje de actualización -->
+        <div id="refreshMessage" class="mt-4 hidden">
+            <div class="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm spinner">sync</span>
+                <span>Actualizando catálogo...</span>
+            </div>
         </div>
     </section>
 
@@ -272,6 +306,7 @@
 <script>
     // CONSTANTES
     const CARRITO_STORAGE_KEY = 'triplem_carrito';
+    const PRODUCTOS_JSON_URL = 'json/productos.json?v=' + Date.now(); // URL base sin timestamp fijo
     
     // Estado global
     let todosLosProductos = [];
@@ -285,6 +320,8 @@
     const subtitle = document.getElementById('subtitle');
     const backButtonContainer = document.getElementById('backButtonContainer');
     const backToFamiliesBtn = document.getElementById('backToFamiliesBtn');
+    const refreshCacheBtn = document.getElementById('refreshCacheBtn');
+    const refreshMessage = document.getElementById('refreshMessage');
 
     // --- Funciones de carrito ---
     function obtenerCarrito() {
@@ -387,7 +424,6 @@
         
         productsGrid.innerHTML = familiasHTML;
         
-        // Añadir event listeners a cada tarjeta de familia
         document.querySelectorAll('.family-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const familia = card.getAttribute('data-familia');
@@ -483,10 +519,20 @@
         actualizarVistaSegunEstado();
     }
 
-    // --- Cargar productos desde JSON ---
-    async function cargarProductos() {
+    // --- Cargar productos desde JSON SIN CACHE ---
+    async function cargarProductos(sinCache = false) {
         try {
-            const response = await fetch('json/productos.json');
+            // Generar URL única para evitar caché del navegador
+            const url = `json/productos.json?nocache=${Date.now()}`;
+            
+            const response = await fetch(url, {
+                cache: 'no-store',  // Forzar no usar caché
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                }
+            });
+            
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
@@ -502,19 +548,78 @@
             window.cantidadesProductos = {};
             todosLosProductos.forEach(p => { window.cantidadesProductos[p.id] = 1; });
             
+            // Resetear vista a familias
             familiaActiva = null;
+            searchInput.value = '';
             actualizarVistaSegunEstado();
             actualizarContadorCarrito();
+            
+            return true;
         } catch (error) {
             console.error('Error cargando productos:', error);
             productsGrid.innerHTML = `<p class="text-center col-span-3 text-error">❌ Error al cargar productos: ${error.message}<br><small>Verifica que el archivo json/productos.json existe y tiene el formato correcto.</small></p>`;
+            return false;
+        }
+    }
+
+    // --- Función para actualizar (limpiar caché y recargar) ---
+    async function actualizarCatalogo() {
+        // Mostrar mensaje de actualización
+        refreshMessage.classList.remove('hidden');
+        refreshCacheBtn.disabled = true;
+        refreshCacheBtn.style.opacity = '0.5';
+        
+        // Añadir clase de rotación al ícono
+        const refreshIcon = refreshCacheBtn.querySelector('.material-symbols-outlined');
+        if (refreshIcon) refreshIcon.classList.add('spinner');
+        
+        try {
+            // Limpiar caché de fetch si es posible (no hay una API directa, pero la URL única lo resuelve)
+            // También podemos intentar limpiar cualquier dato temporal
+            console.log('🔄 Actualizando catálogo...');
+            
+            // Recargar productos forzando sin caché
+            const exito = await cargarProductos(true);
+            
+            if (exito) {
+                // Mostrar mensaje de éxito temporal
+                const msgDiv = refreshMessage.querySelector('div');
+                if (msgDiv) {
+                    const originalHTML = msgDiv.innerHTML;
+                    msgDiv.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span><span>¡Catálogo actualizado correctamente!</span>';
+                    setTimeout(() => {
+                        if (msgDiv) msgDiv.innerHTML = originalHTML;
+                        refreshMessage.classList.add('hidden');
+                    }, 2000);
+                } else {
+                    setTimeout(() => {
+                        refreshMessage.classList.add('hidden');
+                    }, 2000);
+                }
+            }
+        } catch (error) {
+            console.error('Error en actualización:', error);
+            const msgDiv = refreshMessage.querySelector('div');
+            if (msgDiv) {
+                msgDiv.innerHTML = '<span class="material-symbols-outlined text-sm">error</span><span>Error al actualizar. Intenta de nuevo.</span>';
+                setTimeout(() => {
+                    refreshMessage.classList.add('hidden');
+                    if (msgDiv) msgDiv.innerHTML = '<span class="material-symbols-outlined text-sm spinner">sync</span><span>Actualizando catálogo...</span>';
+                }, 3000);
+            }
+        } finally {
+            refreshCacheBtn.disabled = false;
+            refreshCacheBtn.style.opacity = '1';
+            if (refreshIcon) refreshIcon.classList.remove('spinner');
         }
     }
 
     // Event listeners
     searchInput.addEventListener('input', manejarBusqueda);
     backToFamiliesBtn.addEventListener('click', volverAFamilias);
+    refreshCacheBtn.addEventListener('click', actualizarCatalogo);
     
+    // Inicializar
     cargarProductos();
 </script>
 </body>

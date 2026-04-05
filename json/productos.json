@@ -1,0 +1,46 @@
+{
+  "productos": [
+    {
+      "id": 1,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuAd7kmhtDzABfqwjvTnzmyy-X4xCNw3ec6hf1ldiVrG16t9015T_zSooiskEr9jWjwKWqrn7qYW2qaUvfU7S4dqNLNiUd9CzoK7Rb3gjFGWInl85Slt4LESaVwi9cIFvKPy9AwvN2jRb1XopPkm510NzVgh4yllIcKT0zN3PC1KQOqf8LdhYDngeyF_s2r6cLTBkxWfrlsCSOOlP7wQZPCvwIa0w-VZ0-rF48jUhtDgPPzxku09LGxb30zbvQOpCjTuf140eacuUB7H",
+      "nombre": "OBSIDIAN CHRONO X",
+      "precio": "$4,250",
+      "familia": "Relojes"
+    },
+    {
+      "id": 2,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuBAH6P0r-3CIVUXOYOQNQ4xI81fGO0QwzvSRvAN8SmtOOWAwcVHIfk6mV8oHsQODf5wB4bPtVBy4p1QOV7QN85MLqAA-M3q8HxQnRTHo3svQ6F5jGx0sQeGzpibVHD9AY-RbB8XaHv58q9qOhnkE4AYO--BqH9cVzEZkOAfSgVIouTzmfz2-YyM3f7DnOEDg6V_6ftj_x00CVlQQT1sJj7uy-tvO6NKyG8PFLJN3qaq1CVfOQZzIskAReHJ_6uD5K5lZStK81P44RLe",
+      "nombre": "NOIR ESSENCE",
+      "precio": "$195",
+      "familia": "Fragancias"
+    },
+    {
+      "id": 3,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCOjkiILZwdjdOsYSN3Mwn4fhYyE_Z8-1O54fdkpY8v5oWk8NAGvKKpqU0rz8aOV1ms44R3CcMPmjzSq3vDeW6AtGnd8zB7xCcPN7JWdqLfQDuM2D_QgYKg_h_hxQOCiopPnjfbaiEKO2f7QGFJxwsiuKjVz4CqMZHX1hRPBzeYVgzcCyR4YylyrQwrgdpMshOPVTXzA9lfXAFXzxYew7kgsc7x6O1MLCquX9fS3ZGDfLhqxeg-1KJYf9L4o4dGVFL6nXFyHIx9N289",
+      "nombre": "VELVET SOUND G1",
+      "precio": "$890",
+      "familia": "Audífonos"
+    },
+    {
+      "id": 4,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuDeX-tvqgS2xyXSWvAZ2w7c5dIDoVF4k6VICMXQnq5oBIX793-WobeS6Zhkj9Dx1EIbY6lr5eXDehk0UXg55JCwWVyeQsvOV5xJ7z00GHp-8LFQMYC1UrYTAjeD2pnYcQCAbUKnuvCMSZkEtlgXt2_GeYLholcSPpjOHaJ89wyaSr_Ig0JHIu6Q79S5uZtEG_yEYa999wmhg87S3mw2ESkhBwAKvmlxAYI4h79WonmHxGpD9_aM0p0p-HPIUtF2Bv0AnD72hgixu8vD",
+      "nombre": "VOYAGER TOTE",
+      "precio": "$1,500",
+      "familia": "Bolsos"
+    },
+    {
+      "id": 5,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCcqlUB_vlMQOkUbkUzzlgjY7U-nDIfNiXpKrQzDzfcxEqMchyUBMcJpGOaSoEMFHEuf1e-HdPbJX4I2VUpe_HFA67fcNJhEw8q06WMQ259Kk2aF_nq9hvWikhwAzL1VgyICLYfraD8c_2TOBICtMbEo9-SvSoX3bXWVyqwMt9dLeGd9GB-0MkJE3Np5_H46T237UHuILyE3sePiW9fT2P94zas7L9QNNsTBNwnzkPJN1s0PkhyK1k74FYhl1sQ696WNa0QH0ry2uAq",
+      "nombre": "ECLIPSE SHADES",
+      "precio": "$420",
+      "familia": "Gafas"
+    },
+    {
+      "id": 6,
+      "imagen": "https://lh3.googleusercontent.com/aida-public/AB6AXuCYqvZVs4BVV9XlMpbsSE12OXIagDj-_pKOkAYs6NhKtOfJa1vwQfFD_9V3kMJsiAJ679sVScDuqdgm1gAzq-vCZBdjGgoJ8bLiTHXO-Lo8p8jkHNUm3dDS9-08xqivREynl0e2pHfCSp6Sj0ibdqhZe2wPANmfR2hc_xMWC0vzOD4fFGtCQxWmeXuhuV82TqM5rUeDkiYe8PJ_OIeDkeRJR9_unJ3Oo3bZ_rZ_k9XnGEzhoup--aLEAzIdwXIy-zSvE_YMgDAZUeUL",
+      "nombre": "ELIXIR NOIR",
+      "precio": "$130",
+      "familia": "Fragancias"
+    }
+  ]
+}
